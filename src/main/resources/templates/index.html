@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sorting Visualizer</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+            background-color: mediumturquoise;
+        }
+
+        .header {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            width: 100%;
+            padding: 10px;
+        }
+
+        h1 {
+            margin: 0;
+        }
+
+        .input-section {
+            margin-top: 10px;
+        }
+
+        #visualization-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            width: 100%;
+            height: 60%;
+            margin-top: auto;
+            margin-bottom: 20px; /* Add margin bottom to separate time taken display */
+        }
+
+        #visualization {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            width: 100%;
+            height: 100%;
+        }
+
+        .bar {
+            display: inline-block;
+            width: 25px;
+            margin: 1px;
+            background-color: red;
+            text-align: center;
+            color: black;
+            font-size: 10px; /* Adjust font size as needed */
+        }
+
+        input, button {
+            margin: 5px;
+        }
+
+        #timeTaken {
+            margin-top: 10px;
+            font-size: 16px;
+            text-align: center; /* Center the text */
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Sorting Visualizer</h1>
+
+        <div class="input-section">
+            <label for="arrayElements">Enter array elements (comma-separated):</label>
+            <input type="text" id="arrayElements" name="arrayElements" required>
+            <br>
+            <button onclick="sortArray('bubble')">Bubble Sort</button>
+            <button onclick="sortArray('quick')">Quick Sort</button>
+            <button onclick="sortArray('selection')">Selection Sort</button>
+            <button onclick="sortArray('insertion')">Insertion Sort</button>
+            <button onclick="sortArray('merge')">Merge Sort</button>
+            <button onclick="sortArray('heap')">Heap Sort</button>
+        </div>
+    </div>
+
+    <div id="timeTaken">Time taken: </div> <!-- Moved time taken display up -->
+
+    <div id="visualization-container">
+        <div id="visualization"></div>
+    </div>
+
+    <script>
+async function sortArray(algorithm) {
+    const arrayElements = document.getElementById("arrayElements").value.trim();
+    const visualization = document.getElementById("visualization");
+    const timeTakenDisplay = document.getElementById("timeTaken");
+
+    // Check if input is empty or contains non-positive numbers
+    const array = arrayElements.split(',').map(Number);
+    if (!array.every(num => num >= 0)) {
+        alert("Please enter only non-negative numbers.");
+        return;
+    }
+
+    // Clear previous visualization
+    visualization.innerHTML = '';
+    timeTakenDisplay.textContent = 'Time taken: ';
+
+    // Display bars representing array elements with numbers
+    array.forEach((value, index) => {
+        const bar = document.createElement('div');
+        bar.className = 'bar';
+        bar.style.height = value * 5 + 'px';
+        bar.textContent = value;
+        visualization.appendChild(bar);
+    });
+
+    const startTime = performance.now();
+
+    // Call sorting API
+    const response = await fetch(`/sort?array=${array}&algorithm=${algorithm}`);
+    const sortedArray = await response.json();
+
+    const endTime = performance.now();
+    const timeTaken = endTime - startTime;
+
+    // Display sorted array with animation
+    for (let i = 0; i < sortedArray.length; i++) {
+        setTimeout(() => {
+            const bars = document.querySelectorAll('.bar');
+            bars[i].style.height = sortedArray[i] * 5 + 'px';
+            bars[i].textContent = sortedArray[i];
+        }, i * 100); // Adjust the delay (100ms) between each step
+    }
+
+    timeTakenDisplay.textContent = `Time taken: ${timeTaken.toFixed(2)} ms`;
+}
+
+    </script>
+</body>
+</html>
